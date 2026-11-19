@@ -220,8 +220,15 @@ if docx:
         styles = z.read("word/styles.xml").decode("utf8")
     check("R2", "font Arial, size 12 (body)", 'w:ascii="Arial"' in styles and '<w:sz w:val="24"/>' in styles)
     check("R3", "line spacing 1.5 (w:line=360)", 'w:line="360"' in xml)
-    check("R4", "cover: group number + ID numbers, no names",
-          "קבוצה 46" in xml and "תעודות זהות" in xml and not re.search(r"מגישים|שמות", xml))
+    cover_xml = xml.split("w:type=\"page\"")[0] if "w:type=\"page\"" in xml else xml[:20000]
+    cover_text = " ".join(re.findall(r"<w:t[^>]*>([^<]*)</w:t>", cover_xml))
+    check("R4", "cover: group number + at least one 9-digit ID number",
+          "קבוצה 46" in cover_text and bool(re.search(r"\b\d{9}\b", cover_text)))
+    id_lines = [p for p in re.findall(r"<w:p[ >].*?</w:p>", cover_xml, re.S)
+                if re.search(r"\d{9}", "".join(re.findall(r"<w:t[^>]*>([^<]*)</w:t>", p)))]
+    named = [l for l in id_lines if re.search(r"[\u05d0-\u05ea]{2,}", "".join(re.findall(r"<w:t[^>]*>([^<]*)</w:t>", l)))]
+    check("R4b", "cover: no names next to the ID numbers (instructions: IDs only, no names)", not named,
+          f"{len(named)} ID line(s) contain Hebrew words" if named else "")
     sections = ["הגדרת הבעיה", "איסוף וחישת נתונים", "הבנת הנתונים", "הסתברויות אפריוריות", "איזון",
                 "קשרים מעניינים", "החשודים כמשפיעים", "שניתן להסיר", "איכות הנתונים", "נתונים חסרים",
                 "לא הגיוניים", "הכנת הנתונים", "דיסקרטיזציה", "גזירת מאפיינים"]
