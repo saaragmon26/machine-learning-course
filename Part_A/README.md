@@ -21,6 +21,7 @@ Group_46/
 ├── dataset_creation.ipynb        # full analysis (EDA, quality, preparation) with saved outputs
 ├── verify_requirements.py        # automatic self-check of the assignment requirements (46 checks)
 ├── REQUIREMENTS_CHECKLIST.md     # every requirement of the instructions -> where it is implemented
+├── CONCEPTS_GUIDE.md             # course concepts (lectures 1-5) and how each appears in this project
 ├── report/
 │   ├── Group_46_Part_A_report.pdf   # submitted report (max 10 pages)
 │   └── Group_46_Part_A_report.docx  # editable source of the report
