@@ -19,6 +19,8 @@ Group_46/
 ├── sensing.py                    # raw JSON -> data/raw/sensed_data.csv (no API calls)
 ├── preprocessing.py              # cleaning, imputation, features, target -> final_dataset.csv
 ├── dataset_creation.ipynb        # full analysis (EDA, quality, preparation) with saved outputs
+├── verify_requirements.py        # automatic self-check of the assignment requirements (46 checks)
+├── REQUIREMENTS_CHECKLIST.md     # every requirement of the instructions -> where it is implemented
 ├── report/
 │   ├── Group_46_Part_A_report.pdf   # submitted report (max 10 pages)
 │   └── Group_46_Part_A_report.docx  # editable source of the report
@@ -38,6 +40,7 @@ Group_46/
 | `data_collection.py` | Sends one GET request per (city, calendar year) to `https://archive-api.open-meteo.com/v1/archive` with `latitude, longitude, start_date, end_date, daily, timezone=auto`. Collects the **10 required daily variables** plus 4 extra ones for exploration (`relative_humidity_2m_mean`, `pressure_msl_mean`, `cloud_cover_mean`, `dew_point_2m_mean`). **Rate limiting:** a sliding-window counter tracks both the number of requests and their *weighted* cost (Open-Meteo counts a request with more than 10 variables or more than 14 days as several calls). It waits before going over the per-minute, 5,000-per-hour or 10,000-per-24h limits. **Errors:** on HTTP 429, 5xx or a network error it waits (Retry-After header or exponential backoff) and retries. On HTTP 400 it does not retry blindly: it fixes the request (drops the optional variables) first. **Caching:** a response that is already saved and valid is never downloaded again. |
 | `sensing.py` | Reads every local `data/raw/*.json` file (it makes **no** API calls), turns each `daily` block into rows, adds `location` and `date`, keeps the common study period, removes duplicates by `location + date`, sorts, and saves `data/raw/sensed_data.csv`. `json_to_frame()` will be reused in Part B to read the raw test JSON files. |
 | `preprocessing.py` | The data-preparation pipeline (same code for train and the future test set): (1) replaces impossible values with NaN; (2) completes each city to a continuous daily calendar; (3) creates `RainTomorrow` per city from the **raw** `precipitation_sum` of the next day (1 if ≥ 1.0 mm); (4) imputes per city (time interpolation, then a city × month median); (5) derives the features; (6) drops the last day of every city and keeps only features that use today and past days. Writes `data/processed/final_dataset.csv`. |
+| `verify_requirements.py` | Runs 46 automatic checks of the requirements: API params, rate limiter, 429/5xx retry, 400 fix, cache (with a fake HTTP session, no API calls), no API calls in sensing, an independent re-computation of `RainTomorrow`, no next-day leakage, reproducibility, files and report format. See `REQUIREMENTS_CHECKLIST.md`. |
 | `dataset_creation.ipynb` | Every analysis in the report: variable description, prior probabilities, class balance, relationships, suspected predictors, removable variables, missing and invalid data checks, discretization and feature derivation. Saves all figures to `figures/`. Outputs are stored in the notebook. |
 
 ## Final dataset (`data/processed/final_dataset.csv`)
